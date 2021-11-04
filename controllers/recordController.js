@@ -1,27 +1,30 @@
 const recordModel = require("../models");
 
-module.exports.fetchRecords = async function(request,response){
-    if( !request.body.hasOwnProperty("startDate") || !request.body.hasOwnProperty("endDate") || !request.body.hasOwnProperty("minCount") || !request.body.hasOwnProperty("maxCount")){
-        return response.status(400).send({
-            "code" : 1,
-            "msg" : "Failure",
-            "error" : "Missing Required Parameters / Bad Request"
-        })
-    }
+module.exports.fetchRecords = async function(request,response,next){
+    try{
+        if( !request.body.hasOwnProperty("startDate") || !request.body.hasOwnProperty("endDate") || !request.body.hasOwnProperty("minCount") || !request.body.hasOwnProperty("maxCount")){
+            return response.status(400).send({
+                "code" : 1,
+                "msg" : "Failure",
+                "error" : "Missing Required Parameters / Bad Request"
+            })
+        }
 
-    let body = {
-        startDate : request.body.startDate,
-        endDate : request.body.endDate,
-        minCount : request.body.minCount,
-        maxCount : request.body.maxCount
-    }
+        let body = {
+            startDate : request.body.startDate,
+            endDate : request.body.endDate,
+            minCount : request.body.minCount,
+            maxCount : request.body.maxCount
+        }
     
-    
-    let resp = await fetchRecordsFunction(body)
-    if(resp.code == 0){
-        return response.status(200).send(resp); 
-    } else{
-        return response.status(500).send(resp); 
+        let resp = await fetchRecordsFunction(body)
+        if(resp.code == 0){
+            return response.status(200).send(resp); 
+        } else{
+            return response.status(500).send(resp); 
+        }
+    } catch(err){
+        err => next(err)
     }
 }
 

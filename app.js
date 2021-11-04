@@ -1,11 +1,11 @@
 var express = require("express");
 var http = require('http')
 var app = express();
-var bodyParser = require('body-parser');
 var cors = require('cors')
 
 const config = require('./config.js');
 var fetchController = require('./controllers/recordController');
+var errorHandlers = require('./errorHandlers');
 
 app.options('*', cors());
 // allow CORS 
@@ -21,12 +21,19 @@ var allowCrossDomain = function(req, res, next) {
 
 app.use(allowCrossDomain);
 
-app.use(bodyParser.json({limit: '20mb'}))
-app.use(bodyParser.urlencoded({limit: '20mb', extended: true}))
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 
 app.post("/records", fetchController.fetchRecords);
 
+app.use(errorHandlers.errorLogger)
+app.use(errorHandlers.errorResponder)
+app.use(errorHandlers.failSafeHandler)
+
 http.createServer(app).listen(config.server.port);
 
+
+
 module.exports = app
+
 

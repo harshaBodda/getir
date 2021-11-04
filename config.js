@@ -2,9 +2,9 @@ var config = {};
 
 
 config.server = {};
-config.server.port = 3000;
+config.server.port = process.env.PORT || 3000;
 
 config.db = {}
-config.db.mongoURL = 'mongodb+srv://challengeUser:WUMglwNBaydH8Yvu@challenge-xzwqd.mongodb.net/getir-case-study?retryWrites=true'
+config.db.mongoURL = process.env.DB_SRV || 'mongodb+srv://challengeUser:WUMglwNBaydH8Yvu@challenge-xzwqd.mongodb.net/getir-case-study?retryWrites=true'
 
 module.exports = config;

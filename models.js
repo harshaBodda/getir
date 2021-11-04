@@ -1,3 +1,4 @@
+var dbConnection = require('./dbConnection');
 const mongoose = require("mongoose");
 
 const RecordSchema = new mongoose.Schema({

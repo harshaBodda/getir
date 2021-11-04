@@ -1,23 +1,12 @@
 var express = require("express");
 var http = require('http')
-const config = require('./config.js');
 var app = express();
-const mongoose = require("mongoose");
-const recordModel = require("./models");
 var bodyParser = require('body-parser');
 var cors = require('cors')
 
-mongoose.connect(
-   `mongodb+srv://challengeUser:WUMglwNBaydH8Yvu@challenge-xzwqd.mongodb.net/getir-case-study?retryWrites=true`
-);
+const config = require('./config.js');
+var fetchController = require('./controllers/recordController');
 
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error: "));
-db.once("open", function () {
-  console.log("Connected successfully");
-});
-
-//app.use(cors())		//to enable cross-origin requests for angular
 app.options('*', cors());
 // allow CORS 
 //----------------------------------------------------------------
@@ -35,64 +24,9 @@ app.use(allowCrossDomain);
 app.use(bodyParser.json({limit: '20mb'}))
 app.use(bodyParser.urlencoded({limit: '20mb', extended: true}))
 
-app.post("/records", async (request, response) => {
+app.post("/records", fetchController.fetchRecords);
 
-    if( !request.body.hasOwnProperty("startDate") || !request.body.hasOwnProperty("endDate") || !request.body.hasOwnProperty("minCount") || !request.body.hasOwnProperty("maxCount")){
-        return response.send({
-            "code" : 1,
-            "msg" : "Failure",
-            "error" : "Missing Required Parameters / Bad Request"
-        }).status(400)
-    }
+http.createServer(app).listen(config.server.port);
 
-    let startDate = request.body.startDate
-    let endDate = request.body.endDate
-    let minCount = request.body.minCount
-    let maxCount = request.body.maxCount
-    
-    try {
-    const users = await recordModel.aggregate([
-
-        // step 1  : filter the collection bases on dates
-        {
-            "$match" : { 
-                "createdAt": { $lte : new Date(endDate), $gte : new Date(startDate)},
-            }
-        },
-        // step 2 : find the total records of each key
-        {
-            "$project" : {
-                "_id" : 0,
-                "key" : "$key",
-                "createdAt" : "$createdAt",
-                "totalCount": { $sum : "$counts" },
-            }
-        },
-        // step 3 : filter the docs using max and min count
-        {
-            "$match" : {
-                "totalCount" : { $lt : maxCount, $gt : minCount}
-            }
-        }
-
-    ]);
-  
-    return response.send({
-          "code" : 0,
-          "msg" : "Success",
-          "records" : users
-      }).status(200);
-    } catch (error) {
-        return response.send({
-            "code" : 1,
-            "msg" : "Failure",
-            "error" : error
-        }).status(500);
-    }
-  });
-
-
-const httpsserver = http.createServer(app).listen(config.server.port);
-
-
+module.exports = app
 
